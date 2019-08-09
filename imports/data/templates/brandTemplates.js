@@ -1,0 +1,2 @@
+// delivery info
+// sizing guide
