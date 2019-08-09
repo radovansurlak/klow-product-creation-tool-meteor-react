@@ -1,5 +1,5 @@
 
-const populateTemplate = (product, brand, dropshippedProduct = false) => `
+const populateHTMLTemplate = (product, brand, dropshippedProduct = false) => `
   <ul class=""accordeon_container"">
   <li class=""accordeon_item open"">
     <div class=""panel_header"">Details<i class=""fa fa-chevron-down""></i></div>
@@ -59,11 +59,11 @@ const populateTemplate = (product, brand, dropshippedProduct = false) => `
       <div class=""panel_content"">
         <p class=""hidden"">-- DÉBUT DE DELIVERY --</p>
         <meta charset=""utf-8"" />
-        ${brand.delivery}
+        ${brand.deliveryInfo}
         <p class=""hidden""></p>
         <p class=""p1""></p>
         <p class=""p1""><span class=""s1"">Free Delivery is offered for orders over 150€</span></p>
-        <p class=""p1""><span>The item is</span><span> shipped by </span><strong>${dropshippedProduct ? product.brand : 'Klow'}</strong><span> from ${dropshippedProduct ? brand.shippingCountry : 'Paris, France'}.</span></p>
+        <p class=""p1""><span>The item is</span><span> shipped by </span><strong>${dropshippedProduct ? product.brand : 'Klow'}</strong><span> from ${dropshippedProduct ? brand.shippingLocation : 'Paris, France'}.</span></p>
         <p class=""p2""></p>
         <p class=""p2""><span class=""s1""><b>DELIVERED EU COUNTRIES &amp; UNITED KINGDOM</b></span></p>
         <p class=""p2""><span class=""s1"">${dropshippedProduct ? product.brand : 'Klow'} is only shipping to United Kingdom and to the following European countries:
@@ -133,4 +133,4 @@ const populateTemplate = (product, brand, dropshippedProduct = false) => `
 </ul>
   `;
 
-export default populateTemplate;
+export default populateHTMLTemplate;
