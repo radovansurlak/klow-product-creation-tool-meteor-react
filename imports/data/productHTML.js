@@ -1,5 +1,5 @@
 
-const populateTemplate = (productBrand, brandDescription, productValues, productCertifications, productDelivery, brandShippingCountry, dropshippedProduct) => `
+const populateTemplate = (product, brand, dropshippedProduct = false) => `
   <ul class=""accordeon_container"">
   <li class=""accordeon_item open"">
     <div class=""panel_header"">Details<i class=""fa fa-chevron-down""></i></div>
@@ -81,6 +81,7 @@ const populateTemplate = (productBrand, brandDescription, productValues, product
       <div class=""panel_header"">Size Guide<i class=""fa fa-chevron-down""></i></div>
       <div class=""panel_content"">
         <p class=""hidden"">-- DÉBUT DE SIZE GUIDE --</p>
+        ${brand.sizingGuide}
         <table>
           <thead>
             <tr>

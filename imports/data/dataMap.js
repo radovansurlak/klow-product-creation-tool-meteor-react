@@ -1,15 +1,5 @@
 // Data mapping structure:
 // [{Brand CSV column name}, {Shopify CSV column name}]
-const productMappings = [
-  ['Cut', 'cut'],
-  ['Fit', 'fit'],
-  ['Color', 'color'],
-  ['Composition', 'material'],
-  ['Made in', 'madeIn'],
-  ['Product', 'certifications'],
-  ['Brand', 'values'],
-  ['BRAND', 'brand'],
-];
 
 const headerMappings = [
   ['NAME', 'Title'],
@@ -21,6 +11,17 @@ const headerMappings = [
   ['Color', 'Option2 Value'],
   ['BARCODE', 'Variant Barcode'],
   ['QUANTITY', 'Variant Inventory Qty'],
+];
+
+const productMappings = [
+  ['Cut', 'cut'],
+  ['Fit', 'fit'],
+  ['Color', 'color'],
+  ['Composition', 'material'],
+  ['Made in', 'madeIn'],
+  ['Product', 'certifications'],
+  ['Brand', 'values'],
+  ['Vendor', 'brand'],
 ];
 
 export const shopifyCSVTemplate = [

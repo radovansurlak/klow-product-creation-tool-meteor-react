@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import Papa from 'papaparse';
 
-import { headerMap, valueMap } from '../data/dataMap';
+import { headerMap, valueMap, productMap } from '../data/dataMap';
+import { brandTemplates } from '../data/templates/brandTemplates';
 
 class FileReader extends Component {
   constructor() {
@@ -31,9 +32,24 @@ class FileReader extends Component {
   }
 
   createHTMLTemplate = (product) => {
-    console.log(product);
-    // prepare the product data
-    // prepare the brand data
+    // product data are prepared
+    const productData = {};
+    Object.entries(product)
+      .forEach(([property, value]) => {
+        const mappedProperty = productMap.get(property);
+        if (mappedProperty) {
+          productData[mappedProperty] = value;
+        }
+      });
+    console.log(productData);
+    const brandData = brandTemplates[product.brand];
+    console.log(brandData);
+    // brand data are prepared
+    // brand.deliveryInfo
+    // brand.sizingGuide
+    // brand.name
+    // brand.description
+    // brand.tags
   }
 
   importCSV = () => {
