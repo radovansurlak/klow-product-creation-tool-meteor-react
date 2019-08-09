@@ -1,7 +1,9 @@
 import React, { Component } from 'react';
 import Papa from 'papaparse';
 
-import { headerMap, valueMap, productMap } from '../data/dataMaps';
+import {
+  headerMap, valueMap, productMap, shopifyCSVHeaders,
+} from '../data/dataMaps';
 import brandTemplates from '../data/templates/brandTemplates';
 import populateHTMLTemplate from '../data/productHTML';
 
@@ -32,9 +34,9 @@ class FileReader extends Component {
     });
   }
 
-  createHTMLTemplate = (product) => {
-    // product data is prepared
+  injectHTMLTemplate = (product) => {
     const productData = {};
+
     Object.entries(product)
       .forEach(([property, value]) => {
         const mappedProperty = productMap.get(property);
@@ -42,17 +44,35 @@ class FileReader extends Component {
           productData[mappedProperty] = value;
         }
       });
+
     const brandData = brandTemplates[productData.brand];
-    console.log(productData);
-
     const populatedHTML = populateHTMLTemplate(productData, brandData);
-    // console.log(populatedHTML);
 
+    product['Body (HTML)'] = populatedHTML;
+  }
+
+  deleteRedundantProductData = (product) => {
+    Object.keys(product).forEach((property) => {
+      if (!shopifyCSVHeaders.includes(property)) {
+        delete product[property];
+      }
+    });
+  }
+
+  deleteRedundantHeaders = (data) => {
+    data.meta.fields = data.meta.fields.filter(header => shopifyCSVHeaders.includes(header));
+  }
+
+  cleanUpCSVData = (data) => {
+    const { deleteRedundantProductData, deleteRedundantHeaders } = this;
+    data.data.forEach(deleteRedundantProductData);
+    deleteRedundantHeaders(data);
+    console.log(data);
   }
 
   importCSV = () => {
     const {
-      downloadCSV, injectDefaultValues, injectDefaultHeaders, createHTMLTemplate,
+      downloadCSV, injectDefaultValues, injectDefaultHeaders, injectHTMLTemplate, cleanUpCSVData,
     } = this;
     const { csvfile } = this.state;
     Papa.parse(csvfile, {
@@ -64,18 +84,15 @@ class FileReader extends Component {
         }
         return header;
       },
-      // transform: (value, header) => {
-      //   console.log({ value, header });
-      // },
-      complete: (data) => {
-        data.meta.fields = data.meta.fields.filter(field => field !== undefined);
-        data.data.forEach(injectDefaultValues);
-        injectDefaultHeaders(data);
-        data.data.forEach(createHTMLTemplate);
-        // inject default data here?
-        // this.setState({
-        //   csvfile: Papa.unparse(data),
-        // }, downloadCSV);
+      complete: (csvData) => {
+        csvData.data.forEach(injectDefaultValues);
+        injectDefaultHeaders(csvData);
+        csvData.data.forEach(injectHTMLTemplate);
+        cleanUpCSVData(csvData);
+
+        this.setState({
+          csvfile: Papa.unparse(csvData),
+        }, downloadCSV);
       },
     });
   }

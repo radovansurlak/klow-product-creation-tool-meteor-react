@@ -19,7 +19,7 @@ const populateHTMLTemplate = (product, brand, dropshippedProduct = false) => `
       <p><strong>Material: </strong></p>
       <p><strong>${product.material}</strong></p>
       <p></p>
-      <p><strong>${product.madeIn}:</strong>Portugal</p>
+      <p><strong>Made in:</strong> ${product.madeIn}</p>
       <p></p>
       <p><strong>Take Care of me</strong></p>
       <p>Care: 30° mild fine wash, Do not bleach</p>
