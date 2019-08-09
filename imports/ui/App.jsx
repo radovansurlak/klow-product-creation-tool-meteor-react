@@ -1,15 +1,25 @@
-import React, { Component } from 'react';
+import React from 'react';
 
-import { Box, Heading } from 'grommet';
+import { Grommet, Box, Heading } from 'grommet';
 
 import FileReader from './FileReader';
 
+const myTheme = {
+  global: {
+    font: {
+      family: 'Roboto',
+    },
+  },
+};
+
 const App = () => (
   <div>
-    <Box border={{ color: 'brand', size: 'large' }} pad="xlarge">
-      <Heading>Klow Product Creator</Heading>
-      <FileReader />
-    </Box>
+    <Grommet theme={myTheme}>
+      <Box border={{ color: 'brand', size: 'large' }} pad="xlarge">
+        <Heading>Klow Product Creator</Heading>
+        <FileReader />
+      </Box>
+    </Grommet>
   </div>
 );
 
