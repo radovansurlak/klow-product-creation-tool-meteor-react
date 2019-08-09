@@ -30,8 +30,16 @@ class FileReader extends Component {
     });
   }
 
+  createHTMLTemplate = (product) => {
+    console.log(product);
+    // prepare the product data
+    // prepare the brand data
+  }
+
   importCSV = () => {
-    const { downloadCSV, injectDefaultValues, injectDefaultHeaders } = this;
+    const {
+      downloadCSV, injectDefaultValues, injectDefaultHeaders, createHTMLTemplate,
+    } = this;
     const { csvfile } = this.state;
     Papa.parse(csvfile, {
       header: true,
@@ -40,6 +48,7 @@ class FileReader extends Component {
         if (mappedHeader !== undefined) {
           return mappedHeader;
         }
+        return header;
       },
       // transform: (value, header) => {
       //   console.log({ value, header });
@@ -48,11 +57,11 @@ class FileReader extends Component {
         data.meta.fields = data.meta.fields.filter(field => field !== undefined);
         data.data.forEach(injectDefaultValues);
         injectDefaultHeaders(data);
-        console.log(data);
+        data.data.forEach(createHTMLTemplate);
         // inject default data here?
-        this.setState({
-          csvfile: Papa.unparse(data),
-        }, downloadCSV);
+        // this.setState({
+        //   csvfile: Papa.unparse(data),
+        // }, downloadCSV);
       },
     });
   }
