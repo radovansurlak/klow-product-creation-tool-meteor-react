@@ -67,13 +67,24 @@ class FileReader extends Component {
     const { deleteRedundantProductData, deleteRedundantHeaders } = this;
     data.data.forEach(deleteRedundantProductData);
     deleteRedundantHeaders(data);
-    console.log(data);
   }
 
-  importCSV = () => {
+  processCSVData = (csvData) => {
     const {
       downloadCSV, injectDefaultValues, injectDefaultHeaders, injectHTMLTemplate, cleanUpCSVData,
     } = this;
+    csvData.data.forEach(injectDefaultValues);
+    injectDefaultHeaders(csvData);
+    csvData.data.forEach(injectHTMLTemplate);
+    cleanUpCSVData(csvData);
+
+    this.setState({
+      csvfile: Papa.unparse(csvData),
+    }, downloadCSV);
+  }
+
+  importCSV = () => {
+    const { processCSVData } = this;
     const { csvfile } = this.state;
     Papa.parse(csvfile, {
       header: true,
@@ -84,16 +95,7 @@ class FileReader extends Component {
         }
         return header;
       },
-      complete: (csvData) => {
-        csvData.data.forEach(injectDefaultValues);
-        injectDefaultHeaders(csvData);
-        csvData.data.forEach(injectHTMLTemplate);
-        cleanUpCSVData(csvData);
-
-        this.setState({
-          csvfile: Papa.unparse(csvData),
-        }, downloadCSV);
-      },
+      complete: processCSVData,
     });
   }
 
