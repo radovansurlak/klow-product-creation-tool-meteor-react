@@ -7,8 +7,8 @@ const populateHTMLTemplate = (product, brand, dropshippedProduct = false) => `
       <!-- DÉBUT DE LA DESCRIPTION -->
             <meta charset=""utf-8"" />
       <p><strong>Product Details</strong></p>
-      <p>On the picture, the model Marlene is wearing a size S.</p>
-      <p>Model Size: Height 175 | Chest 84 cm | Waist 60 cm| Hips 89 cm</p>
+      <p>On the picture, the model ${product.modelName} is wearing a size ${product.modelSizeWorn}.</p>
+      <p>Model height: ${product.modelHeight}</p>
       <p></p>
       <p><strong></strong></p>
       <p><strong>Size &amp; Fit</strong></p>
@@ -21,7 +21,7 @@ const populateHTMLTemplate = (product, brand, dropshippedProduct = false) => `
       <p></p>
       <p><strong>Made in:</strong> ${product.madeIn}</p>
       <p></p>
-      <p><strong>Take Care of me</strong></p>
+      <p><strong>Take care of me</strong></p>
       <p>Care: 30° mild fine wash, Do not bleach</p>
       <p></p>
       <p class=""hidden"">-- FIN DE LA DESCRIPTION --</p>
@@ -82,44 +82,6 @@ const populateHTMLTemplate = (product, brand, dropshippedProduct = false) => `
       <div class=""panel_content"">
         <p class=""hidden"">-- DÉBUT DE SIZE GUIDE --</p>
         ${brand.sizingGuide}
-        <table>
-          <thead>
-            <tr>
-              <th></th>
-              <th>XS</th>
-              <th>S</th>
-              <th>M</th>
-              <th>L</th>
-              <th>XL</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>US/UK</td>
-              <td>6</td>
-              <td>8</td>
-              <td>10/12</td>
-              <td>12/14</td>
-              <td>16</td>
-            </tr>
-            <tr>
-              <td>Waist girth</td>
-              <td>62-66</td>
-              <td>67-71</td>
-              <td>72-76</td>
-              <td>77-81</td>
-              <td>82-86</td>
-            </tr>
-            <tr>
-              <td>Hip girth</td>
-              <td>87-91</td>
-              <td>92-96</td>
-              <td>97-101</td>
-              <td>102-106</td>
-              <td>107-111</td>
-            </tr>
-          </tbody>
-        </table>
         <p>The measurements are in centimeters</p>
         <br />
         <p class=""p1""><span class=""s1"">You need more information about this product? Drop us an e-mail at : <a

@@ -34,10 +34,20 @@ class FileReader extends Component {
     });
   }
 
-  injectHTMLTemplate = (product) => {
-    const productData = {};
+  getProductValues = (dataRow) => {
+    const valueTagData = Object.entries(dataRow).filter(([tag]) => tag.includes('Tag Value'));
+    const valuesOnlyData = valueTagData.map(([, value]) => value);
+    const valuesString = valuesOnlyData.join(', ');
+    return valuesString;
+  }
 
-    Object.entries(product)
+  injectHTMLTemplate = (dataRow) => {
+    const { getProductValues } = this;
+
+    const productData = {};
+    productData.values = getProductValues(dataRow);
+
+    Object.entries(dataRow)
       .forEach(([property, value]) => {
         const mappedProperty = productMap.get(property);
         if (mappedProperty) {
@@ -48,7 +58,7 @@ class FileReader extends Component {
     const brandData = brandTemplates[productData.brand];
     const populatedHTML = populateHTMLTemplate(productData, brandData);
 
-    product['Body (HTML)'] = populatedHTML;
+    dataRow['Body (HTML)'] = populatedHTML;
   }
 
   deleteRedundantProductData = (product) => {

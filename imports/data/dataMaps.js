@@ -5,7 +5,7 @@ const headerMappings = [
   ['Brand', 'Vendor'],
   ['Title Name', 'Title'],
   ['Images', 'Image Src'],
-  ['Product type', 'Type'],
+  ['Product Type', 'Type'],
   ['SKU', 'Variant SKU'],
   ['TTC Price', 'Variant Price'],
   ['Barcode', 'Variant Barcode'],
@@ -15,14 +15,18 @@ const headerMappings = [
 // TODO: These mappings could really use to be redesigned
 const productMappings = [
   ['Cut', 'cut'],
-  ['Fit', 'Fit'],
-  ['Option2 Value', 'color'],
-  ['Composition', 'material'],
-  ['Made in', 'madeIn'],
-  ['Product', 'certifications'],
+  ['Fit', 'fit'],
+  ['Color', 'color'],
+  ['Material Composition', 'material'],
+  ['Made In', 'madeIn'],
+  ['Production Certifications', 'certifications'],
   ['Brand', 'values'],
   ['Vendor', 'brand'],
+  ['Model Name', 'modelName'],
+  ['Size Worn By Model', 'modelSizeWorn'],
+  ['Model Height', 'modelHeight'],
 ];
+
 
 export const shopifyCSVHeaders = [
   'Handle',
@@ -32,6 +36,7 @@ export const shopifyCSVHeaders = [
   'Type',
   'Tags',
   'Published',
+  'Image Src',
   'Option1 Name',
   'Option1 Value',
   'Option2 Name',
