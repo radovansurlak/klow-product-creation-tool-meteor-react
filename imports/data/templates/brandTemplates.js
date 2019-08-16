@@ -91,7 +91,6 @@ const brandTemplates = {
     description: `<p>This German brand does fashion with love and dedication, each garment from ARMEDANGELS is made from organic cotton and is also fair trade - the reason why this brand is one of our favourites at Klow.</p>
     <p>Fair-trade certified since 2007, ARMEDANGELS have been doing an amazing job ever since. Today they are one of the most important and recognised organic and fair fashion labels in Europe.</p>
     <p>At Klow, we only select the products that are environmentally friendly and ethically made.</p>`,
-    tags: 'tag1, tag2, tag3',
   },
 };
 

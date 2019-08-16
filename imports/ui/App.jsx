@@ -2,7 +2,7 @@ import React from 'react';
 
 import { Grommet, Box, Heading } from 'grommet';
 
-import FileReader from './FileReader';
+import CSVProcessor from './CSVProcessor';
 
 const myTheme = {
   global: {
@@ -17,7 +17,7 @@ const App = () => (
     <Grommet theme={myTheme}>
       <Box border={{ color: 'brand', size: 'large' }} pad="xlarge">
         <Heading>Klow Product Creator</Heading>
-        <FileReader />
+        <CSVProcessor />
       </Box>
     </Grommet>
   </div>

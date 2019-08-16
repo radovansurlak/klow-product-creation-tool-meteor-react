@@ -1,13 +1,16 @@
 import React, { Component } from 'react';
+import { Meteor } from 'meteor/meteor';
 import Papa from 'papaparse';
 
 import {
   headerMap, valueMap, productMap,
 } from '../data/dataMaps';
 
-import shopifyCSVHeaders from '../data/templates/shopifyCSVHeaders';
-import brandTemplates from '../data/templates/brandTemplates';
+import shopifyCSVHeaders from '../data/shopifyCSVHeaders';
 import populateHTMLTemplate from '../data/populateHTMLTemplate';
+// import brandTemplates from '../data/templates/brandTemplates';
+
+let brandTemplates;
 
 class CSVProcessor extends Component {
   constructor() {
@@ -15,6 +18,27 @@ class CSVProcessor extends Component {
     this.state = {
       csvfile: undefined,
     };
+  }
+
+  async componentDidMount() {
+    const response = await fetch(Meteor.settings.public.BRAND_TEMPLATES_SHEET_URLS);
+    const textResponse = await response.text();
+    Papa.parse(textResponse, {
+      header: true,
+      transformHeader: (header) => {
+        const mappedHeader = headerMap.get(header);
+        if (mappedHeader !== undefined) {
+          return mappedHeader;
+        }
+        return header;
+      },
+      complete: ({ data }) => {
+        brandTemplates = data.reduce((result, item) => {
+          result[item.name] = item;
+          return result;
+        }, {});
+      },
+    });
   }
 
   handleUpload = (event) => {
@@ -58,6 +82,7 @@ class CSVProcessor extends Component {
       });
 
     const brandData = brandTemplates[productData.brand];
+
     const populatedHTML = populateHTMLTemplate(productData, brandData);
 
     dataRow['Body (HTML)'] = populatedHTML;
