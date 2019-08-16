@@ -157,7 +157,9 @@ class CSVProcessor extends Component {
   render() {
     return (
       <div>
+        <label for="file-upload" class="custom-file-upload">Upload CSV</label>
         <input
+          id="file-upload"
           type="file"
           ref={(input) => {
             this.filesInput = input;
