@@ -2,12 +2,14 @@ import React, { Component } from 'react';
 import Papa from 'papaparse';
 
 import {
-  headerMap, valueMap, productMap, shopifyCSVHeaders,
+  headerMap, valueMap, productMap,
 } from '../data/dataMaps';
-import brandTemplates from '../data/templates/brandTemplates';
-import populateHTMLTemplate from '../data/productHTML';
 
-class FileReader extends Component {
+import shopifyCSVHeaders from '../data/templates/shopifyCSVHeaders';
+import brandTemplates from '../data/templates/brandTemplates';
+import populateHTMLTemplate from '../data/populateHTMLTemplate';
+
+class CSVProcessor extends Component {
   constructor() {
     super();
     this.state = {
@@ -144,4 +146,4 @@ class FileReader extends Component {
   }
 }
 
-export default FileReader;
+export default CSVProcessor;
