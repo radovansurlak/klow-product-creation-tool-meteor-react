@@ -1,5 +1,28 @@
+const defaults = {
+  product: {
+    modelName: '***FILL IN***',
+    modelSizeWorn: '***FILL IN***',
+    modelHeight: '***FILL IN***',
+    cut: '***FILL IN***',
+    fit: '***FILL IN***',
+    color: '***FILL IN***',
+    material: '***FILL IN***',
+    madeIn: '***FILL IN***',
+    certifications: '***FILL IN***',
+    values: '***FILL IN***',
+    brand: '***FILL IN***',
+    description: '***FILL IN***',
+  },
+  brand: {
+    description: '***FILL IN***',
+    deliveryInfo: '***FILL IN***',
+    shippingLocation: '***FILL IN***',
+    sizingGuide: '***FILL IN***',
+  },
+};
 
-const populateHTMLTemplate = (product, brand, dropshippedProduct = false) => `
+
+const populateHTMLTemplate = (product = defaults.product, brand = defaults.brand, dropshippedProduct = false) => `
   <ul class=""accordeon_container"">
   <li class=""accordeon_item open"">
     <div class=""panel_header"">Details<i class=""fa fa-chevron-down""></i></div>
