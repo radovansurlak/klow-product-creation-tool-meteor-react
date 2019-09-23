@@ -8,7 +8,6 @@ import {
 
 import shopifyCSVHeaders from '../data/shopifyCSVHeaders';
 import populateHTMLTemplate from '../data/populateHTMLTemplate';
-// import brandTemplates from '../data/templates/brandTemplates';
 
 let brandTemplates;
 
@@ -62,17 +61,19 @@ class CSVProcessor extends Component {
 
   getProductValues = (dataRow) => {
     const valueTagData = Object.entries(dataRow).filter(([tag]) => tag.includes('Tag Value'));
-    const valuesOnlyData = valueTagData.map(([, value]) => value);
+    const valuesOnlyData = valueTagData.map(([, value]) => value).filter(tag => tag.length !== 0);
     const valuesString = valuesOnlyData.join(', ');
     return valuesString;
   }
 
   injectHTMLTemplate = (dataRow) => {
     const { getProductValues } = this;
-
     const productData = {};
-    productData.values = getProductValues(dataRow);
 
+    const isMarketplaceProduct = 'Marketplace' in dataRow;
+
+    productData.values = getProductValues(dataRow);
+    
     Object.entries(dataRow)
       .forEach(([property, value]) => {
         const mappedProperty = productMap.get(property);
@@ -81,9 +82,14 @@ class CSVProcessor extends Component {
         }
       });
 
+
     const brandData = brandTemplates[productData.brand];
 
-    const populatedHTML = populateHTMLTemplate(productData, brandData);
+    const populatedHTML = populateHTMLTemplate(productData, brandData, isMarketplaceProduct);
+
+    if (isMarketplaceProduct) {
+      dataRow.Tags += ',marketplace';
+    }
 
     dataRow['Body (HTML)'] = populatedHTML;
   }
