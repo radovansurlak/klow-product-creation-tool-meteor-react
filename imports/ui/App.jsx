@@ -2,9 +2,7 @@ import React from 'react';
 import CSVProcessor from './CSVProcessor';
 
 const App = () => (
-  <div>
-    <CSVProcessor />
-  </div>
+  <CSVProcessor />
 );
 
 export default App;

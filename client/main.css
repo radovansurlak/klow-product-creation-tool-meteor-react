@@ -43,13 +43,42 @@ h1 {
   padding: 20px;
   background-color: white;
   text-align: center;
-  justify-self: flex-end;
   transition: transform 250ms;
   cursor: pointer;
+  flex-grow: 1;
+}
+
+#file-upload:disabled ~ .custom-file-upload  {
+  transform: scale(0);
 }
 
 .custom-file-upload:hover {
   transform: scale(1.02);
+}
+
+
+.main-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.radio-section {
+  text-align: center;
+  background-color: rgba(255,255,255,0.8);
+  padding-bottom: 22px;
+}
+
+.product-type-selector {
+  margin: 0 10px;
+}
+
+.product-type-selector > label {
+  cursor: pointer;
+}
+
+.product-type-selector > input {
+  margin-right: 10px;
+  transform: scale(1.2);
 }
 
 img {

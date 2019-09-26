@@ -2,6 +2,9 @@ import React, { Component } from 'react';
 import { Meteor } from 'meteor/meteor';
 import Papa from 'papaparse';
 
+import uuid from 'uuid/v1';
+
+
 import {
   headerMap, valueMap, productMap,
 } from '../data/dataMaps';
@@ -16,6 +19,8 @@ class CSVProcessor extends Component {
     super();
     this.state = {
       csvfile: undefined,
+      productTypes: [{ label: 'Marketplace', value: 'marketplace' }, { label: 'Retail', value: 'retail' }],
+      selectedProductType: undefined,
     };
   }
 
@@ -68,12 +73,14 @@ class CSVProcessor extends Component {
 
   injectHTMLTemplate = (dataRow) => {
     const { getProductValues } = this;
-    
+    const { selectedProductType } = this.state;
+
     const productData = {};
-    const isMarketplaceProduct = 'Marketplace' in dataRow;
+
+    const isMarketplaceProduct = selectedProductType === 'marketplace';
 
     productData.values = getProductValues(dataRow);
-    
+
     Object.entries(dataRow)
       .forEach(([property, value]) => {
         const mappedProperty = productMap.get(property);
@@ -81,7 +88,6 @@ class CSVProcessor extends Component {
           productData[mappedProperty] = value;
         }
       });
-
 
     const brandData = brandTemplates[productData.brand];
 
@@ -138,29 +144,57 @@ class CSVProcessor extends Component {
     });
   }
 
+  handleOptionChange = (event) => {
+    const { value: selectedValue } = event.target;
+    this.setState(() => ({
+      selectedProductType: selectedValue,
+    }));
+  }
+
   downloadCSV() {
     const { csvfile } = this.state;
     const csv = csvfile;
 
+    const timestamp = new Date();
+    const formattedDate = `${timestamp.getFullYear()}-${timestamp.getMonth() + 1}-${timestamp.getDate()}_${timestamp.getHours()}-${timestamp.getMinutes()}`;
+
     const csvData = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     let csvURL = null;
     if (navigator.msSaveBlob) {
-      csvURL = navigator.msSaveBlob(csvData, 'download.csv');
+      csvURL = navigator.msSaveBlob(csvData, `klow-creator-${formattedDate}.csv`);
     } else {
       csvURL = window.URL.createObjectURL(csvData);
     }
 
     const tempLink = document.createElement('a');
     tempLink.href = csvURL;
-    tempLink.setAttribute('download', 'download.csv');
+    tempLink.setAttribute('download', `klow-creator-${formattedDate}.csv`);
     tempLink.click();
   }
 
+
+  renderRadios = () => {
+    const { productTypes, selectedProductType } = this.state;
+    const { handleOptionChange } = this;
+    return productTypes.map(({ label, value }) => (
+      <span key={uuid()} className="product-type-selector">
+        <input type="radio" name="productType" id={`select-${value}`} checked={selectedProductType === value} onChange={handleOptionChange} value={value} />
+        <label htmlFor={`select-${value}`}>{label}</label>
+      </span>
+    ));
+  }
+
   render() {
+    const { renderRadios } = this;
+    const { selectedProductType } = this.state;
     return (
-      <div>
-        <label htmlFor="file-upload" class="custom-file-upload">Upload CSV</label>
+      <main className="main-container">
+        <header className="radio-section">
+          <h2>Select product type</h2>
+          {renderRadios()}
+        </header>
         <input
+          disabled={selectedProductType === undefined}
           id="file-upload"
           type="file"
           ref={(input) => {
@@ -170,7 +204,8 @@ class CSVProcessor extends Component {
           placeholder={null}
           onChange={this.handleUpload}
         />
-      </div>
+        <label htmlFor="file-upload" className="custom-file-upload">Upload CSV</label>
+      </main>
     );
   }
 }
