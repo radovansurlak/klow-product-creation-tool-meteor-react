@@ -22,7 +22,7 @@ const defaults = {
 };
 
 
-const populateHTMLTemplate = (product = defaults.product, brand = defaults.brand, dropshippedProduct = false) => `
+const populateHTMLTemplate = (product = defaults.product, brand = defaults.brand, dropshippedProduct = true) => `
   <ul class="accordeon_container">
   <li class="accordeon_item open">
     <div class="panel_header">Details<i class="fa fa-chevron-down"></i></div>

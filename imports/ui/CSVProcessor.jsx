@@ -68,8 +68,8 @@ class CSVProcessor extends Component {
 
   injectHTMLTemplate = (dataRow) => {
     const { getProductValues } = this;
+    
     const productData = {};
-
     const isMarketplaceProduct = 'Marketplace' in dataRow;
 
     productData.values = getProductValues(dataRow);
@@ -86,10 +86,6 @@ class CSVProcessor extends Component {
     const brandData = brandTemplates[productData.brand];
 
     const populatedHTML = populateHTMLTemplate(productData, brandData, isMarketplaceProduct);
-
-    if (isMarketplaceProduct) {
-      dataRow.Tags += ',marketplace';
-    }
 
     dataRow['Body (HTML)'] = populatedHTML;
   }
