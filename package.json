@@ -10,6 +10,7 @@
   "dependencies": {
     "@babel/runtime": "^7.3.4",
     "babel-eslint": "^10.0.2",
+    "graphql-request": "^1.8.2",
     "grommet": "^2.7.4",
     "meteor-node-stubs": "^0.4.1",
     "papaparse": "^5.0.1",
