@@ -2,15 +2,12 @@
 import { request, GraphQLClient } from 'graphql-request';
 import { Meteor } from 'meteor/meteor';
 
+import base64 from '../helpers/base64';
+
 const { SHOPIFY_API_KEY, SHOPIFY_API_PASS } = Meteor.settings.public;
 
 Meteor.methods({
-  async createMetafieldData(productHandle, metafieldValueString) {
-    function base64(str) {
-      const buff = Buffer.from(str, 'utf8');
-      return buff.toString('base64');
-    }
-
+  async createMetafieldData({ productHandle, metafieldValueString }) {
     const authorizationString = base64(`${SHOPIFY_API_KEY}:${SHOPIFY_API_PASS}`);
 
     const client = new GraphQLClient('https://klow-stag.myshopify.com/admin/api/2019-10/graphql.json', {
@@ -22,42 +19,42 @@ Meteor.methods({
     });
 
     const productIdQuery = `{
-      productByHandle(handle: "${productHandle}") {
-        id
-      }
-    }`;
+        productByHandle(handle: "${productHandle}") {
+          id
+        }
+      }`;
 
+    let productId;
     let productData;
 
     try {
       productData = await client.request(productIdQuery);
     } catch (error) {
-      return {
-        success: false,
-      };
+      throw new Meteor.Error('error requesting product ID query', null, { error, productHandle });
     }
 
-    const { id: productId } = productData.productByHandle;
+    if (productData.productByHandle && productData.productByHandle.id) {
+      productId = productData.productByHandle.id;
+    } else {
+      return new Meteor.Error('product ID undefined', null, { productData, productHandle });
+    }
 
     const metafieldMutationQuery = `mutation {
-      productUpdate(input: {metafields: {namespace: "certifications", key: "certifications", value: "${metafieldValueString}", valueType: STRING}, id: "${productId}"}) {
-        product {
-          title
+        productUpdate(input: {metafields: {namespace: "certifications", key: "certifications", value: "${metafieldValueString}", valueType: STRING}, id: "${productId}"}) {
+          product {
+            title
+          }
+          userErrors {
+            field
+            message
+          }
         }
-        userErrors {
-          field
-          message
-        }
-      }
-    }`;
+      }`;
 
     try {
-      const response = await client.request(metafieldMutationQuery);
-      return response;
+      return await client.request(metafieldMutationQuery);
     } catch (error) {
-      return {
-        success: false,
-      };
+      throw new Meteor.Error('error running metafield mutation query', null, { error, productHandle });
     }
   },
 });

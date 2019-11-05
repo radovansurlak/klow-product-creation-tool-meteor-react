@@ -1,9 +1,12 @@
+/* eslint-disable no-restricted-syntax */
+/* eslint-disable no-await-in-loop */
 import React, { Component } from 'react';
 import { Meteor } from 'meteor/meteor';
 import Papa from 'papaparse';
 
 import uuid from 'uuid/v1';
 
+import generateSlug from '../helpers/generateSlug';
 
 import {
   headerMap, valueMap, productMap,
@@ -13,6 +16,7 @@ import shopifyCSVHeaders from '../data/shopifyCSVHeaders';
 import populateHTMLTemplate from '../data/populateHTMLTemplate';
 
 let brandTemplates;
+
 
 class CSVProcessor extends Component {
   constructor() {
@@ -116,40 +120,24 @@ class CSVProcessor extends Component {
     deleteRedundantHeaders(data);
   }
 
-  createShopifyMetafield = (productData) => {
-    function generateSlug(string) {
-      let str = string;
-      str = str.replace(/^\s+|\s+$/g, ''); // trim
-      str = str.toLowerCase();
-      // remove accents, swap ñ for n, etc
-      const from = 'àáäâèéëêìíïîòóöôùúüûñç·/_,:;';
-      const to = 'aaaaeeeeiiiioooouuuunc------';
-      for (let i = 0, l = from.length; i < l; i++) {
-        str = str.replace(new RegExp(from.charAt(i), 'g'), to.charAt(i));
-      }
-      str = str.replace(/[^a-z0-9 -]/g, '') // remove invalid chars
-        .replace(/\s+/g, '-') // collapse whitespace and replace by -
-        .replace(/-+/g, '-'); // collapse dashes
-      return str;
-    }
-
+  createShopifyMetafield = async productData => new Promise((resolve, reject) => {
     const certificationKeys = ['Production Certifications', 'Material Certifications', 'Brand Certifications', 'Product Certifications'];
     const certificationStrings = [];
 
     certificationKeys.forEach(key => productData[key]
       && certificationStrings.push(productData[key]));
 
-    const metafieldString = certificationStrings.join(', ');
-
+    const metafieldValueString = certificationStrings.join(', ');
     const productHandle = productData.Handle || generateSlug(productData.Title);
 
-    Meteor.call('createMetafieldData', productHandle, metafieldString, (error, result) => {
-      console.log(error, result);
+    Meteor.call('createMetafieldData', { productHandle, metafieldValueString }, (error, result) => {
+      if (error) reject(error);
+      resolve(result);
     });
-  }
+  })
 
 
-  processCSVData = (csvData) => {
+  processCSVData = async (csvData) => {
     const {
       downloadCSV,
       injectDefaultValues,
@@ -169,7 +157,11 @@ class CSVProcessor extends Component {
     }));
 
     if (state.selectedProductType !== 'retail') {
-      csvData.data.forEach(createShopifyMetafield);
+      // csvData.data.forEach(createShopifyMetafield);
+      for (const product of csvData.data) {
+        const result = await createShopifyMetafield(product);
+        console.log(result);
+      }
     }
 
     cleanUpCSVData(csvData);
@@ -203,11 +195,34 @@ class CSVProcessor extends Component {
     }));
   }
 
-  handleMetafieldButtonClick() {
-    const { archivedCSVData } = this.state;
-    const { createShopifyMetafield } = this;
+  filterProductArray = (productArray) => {
+    const filteredArray = [];
+    const productHash = {};
+    productArray.forEach((item) => {
+      if (!productHash[item.Title]) {
+        filteredArray.push(item);
+        productHash[item.Title] = true;
+      }
+    });
+    return filteredArray;
+  }
 
-    archivedCSVData.data.forEach(createShopifyMetafield);
+  handleMetafieldButtonClick = async () => {
+    const { archivedCSVData } = this.state;
+    const { createShopifyMetafield, filterProductArray } = this;
+
+    const filteredProductData = filterProductArray(archivedCSVData.data);
+
+    for (const product of filteredProductData) {
+      try {
+        const result = await createShopifyMetafield(product);
+        console.log(result);
+      } catch (error) {
+        console.log(error);
+      }
+    }
+
+    alert('Finished creating Shopify metafields');
   }
 
   downloadCSV() {
