@@ -15,8 +15,10 @@ import {
 import shopifyCSVHeaders from '../data/shopifyCSVHeaders';
 import populateHTMLTemplate from '../data/populateHTMLTemplate';
 
-let brandTemplates;
+const { SHOPIFY_API_KEY, SHOPIFY_API_PASS } = Meteor.settings.public;
+const authorizationString = btoa(`${SHOPIFY_API_KEY}:${SHOPIFY_API_PASS}`);
 
+let brandTemplates;
 
 class CSVProcessor extends Component {
   constructor() {
@@ -120,14 +122,31 @@ class CSVProcessor extends Component {
     deleteRedundantHeaders(data);
   }
 
+  processCertificationArray = (certificationArray) => {
+    const flatCertificationArray = certificationArray.map(x => x.split(',')).flatten().map(x => x.trim());
+    const filteredArray = [];
+    const certificationHash = {};
+    flatCertificationArray.forEach((certification) => {
+      if (!certificationHash[certification.trim().toLowerCase()]) {
+        filteredArray.push(certification);
+        certificationHash[certification.trim().toLowerCase()] = true;
+      }
+    });
+    return filteredArray;
+  };
+
   createShopifyMetafield = async productData => new Promise((resolve, reject) => {
+    const { processCertificationArray } = this;
+
     const certificationKeys = ['Production Certifications', 'Material Certifications', 'Brand Certifications', 'Product Certifications'];
     const certificationStrings = [];
 
     certificationKeys.forEach(key => productData[key]
       && certificationStrings.push(productData[key]));
 
-    const metafieldValueString = certificationStrings.join(', ');
+    const processedCertificationStrings = processCertificationArray(certificationStrings);
+
+    const metafieldValueString = processedCertificationStrings.join(', ');
     const productHandle = productData.Handle || generateSlug(productData.Title);
 
     Meteor.call('createMetafieldData', { productHandle, metafieldValueString }, (error, result) => {
@@ -144,8 +163,6 @@ class CSVProcessor extends Component {
       injectDefaultHeaders,
       injectHTMLTemplate,
       cleanUpCSVData,
-      createShopifyMetafield,
-      state,
     } = this;
 
     csvData.data.forEach(injectDefaultValues);
@@ -155,14 +172,6 @@ class CSVProcessor extends Component {
     this.setState(() => ({
       archivedCSVData: JSON.parse(JSON.stringify(csvData)),
     }));
-
-    if (state.selectedProductType !== 'retail') {
-      // csvData.data.forEach(createShopifyMetafield);
-      for (const product of csvData.data) {
-        const result = await createShopifyMetafield(product);
-        console.log(result);
-      }
-    }
 
     cleanUpCSVData(csvData);
 
@@ -278,8 +287,8 @@ class CSVProcessor extends Component {
           placeholder={null}
           onChange={this.handleUpload}
         />
-        <label htmlFor="file-upload" className="custom-file-upload">Upload CSV</label>
-        {displayMetafieldButton && <button type="button" onClick={() => this.handleMetafieldButtonClick()}>Create metafields</button>}
+        {!displayMetafieldButton && <label htmlFor="file-upload" className="custom-file-upload">Upload CSV</label>}
+        {displayMetafieldButton && <button className="metafield-button" type="button" onClick={() => this.handleMetafieldButtonClick()}>Create metafields</button>}
       </main>
     );
   }
