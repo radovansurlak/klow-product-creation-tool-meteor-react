@@ -5,7 +5,6 @@ import { Meteor } from 'meteor/meteor';
 import Papa from 'papaparse';
 
 import uuid from 'uuid/v1';
-
 import generateSlug from '../helpers/generateSlug';
 
 import {
@@ -15,8 +14,7 @@ import {
 import shopifyCSVHeaders from '../data/shopifyCSVHeaders';
 import populateHTMLTemplate from '../data/populateHTMLTemplate';
 
-const { SHOPIFY_API_KEY, SHOPIFY_API_PASS } = Meteor.settings.public;
-const authorizationString = btoa(`${SHOPIFY_API_KEY}:${SHOPIFY_API_PASS}`);
+import Loader from './Loader';
 
 let brandTemplates;
 
@@ -29,6 +27,8 @@ class CSVProcessor extends Component {
       csvfile: undefined,
       productTypes: [{ label: 'Marketplace', value: 'marketplace' }, { label: 'Retail', value: 'retail' }],
       selectedProductType: undefined,
+      importChecked: false,
+      creatingMetafields: false,
     };
   }
 
@@ -216,11 +216,21 @@ class CSVProcessor extends Component {
     return filteredArray;
   }
 
+  handleCheckboxChange = () => {
+    this.setState(oldState => ({
+      importChecked: !oldState.importChecked,
+    }));
+  }
+
   handleMetafieldButtonClick = async () => {
     const { archivedCSVData } = this.state;
     const { createShopifyMetafield, filterProductArray } = this;
 
     const filteredProductData = filterProductArray(archivedCSVData.data);
+
+    this.setState({
+      creatingMetafields: true,
+    });
 
     for (const product of filteredProductData) {
       try {
@@ -230,6 +240,10 @@ class CSVProcessor extends Component {
         console.log(error);
       }
     }
+
+    this.setState({
+      creatingMetafields: false,
+    });
 
     alert('Finished creating Shopify metafields');
   }
@@ -269,7 +283,12 @@ class CSVProcessor extends Component {
 
   render() {
     const { renderRadios } = this;
-    const { selectedProductType, displayMetafieldButton } = this.state;
+    const {
+      selectedProductType, displayMetafieldButton, importChecked, creatingMetafields,
+    } = this.state;
+
+    const showMetafieldButton = displayMetafieldButton && importChecked && !creatingMetafields;
+
     return (
       <main className="main-container">
         <header className="radio-section">
@@ -287,8 +306,17 @@ class CSVProcessor extends Component {
           placeholder={null}
           onChange={this.handleUpload}
         />
+
         {!displayMetafieldButton && <label htmlFor="file-upload" className="custom-file-upload">Upload CSV</label>}
-        {displayMetafieldButton && <button className="metafield-button" type="button" onClick={() => this.handleMetafieldButtonClick()}>Create metafields</button>}
+        {displayMetafieldButton && !creatingMetafields && (
+        <label className="import-label">
+          <input type="checkbox" className="import-checkbox" checked={importChecked} onChange={() => this.handleCheckboxChange()} />
+          All products finished importing in Shopify
+        </label>
+        )}
+        {showMetafieldButton && <button className="metafield-button" type="button" onClick={() => this.handleMetafieldButtonClick()}>Create metafields</button>}
+        {creatingMetafields && <h3 className="metafields-info-header">Creating metafields...</h3> }
+        {creatingMetafields && <Loader /> }
       </main>
     );
   }
