@@ -2,7 +2,7 @@
 import { request, GraphQLClient } from 'graphql-request';
 import { Meteor } from 'meteor/meteor';
 
-const { SHOPIFY_API_KEY, SHOPIFY_API_PASS } = Meteor.settings.public;
+const { SHOPIFY_API_KEY, SHOPIFY_API_PASS, SHOPIFY_STORE_NAME } = Meteor.settings.public;
 
 Meteor.methods({
   async createMetafieldData(productHandle, metafieldValueString) {
@@ -13,7 +13,7 @@ Meteor.methods({
 
     const authorizationString = base64(`${SHOPIFY_API_KEY}:${SHOPIFY_API_PASS}`);
 
-    const client = new GraphQLClient('https://klow-stag.myshopify.com/admin/api/2019-10/graphql.json', {
+    const client = new GraphQLClient(`https://${SHOPIFY_STORE_NAME}.myshopify.com/admin/api/2019-10/graphql.json`, {
       credentials: 'include',
       mode: 'cors',
       headers: {
@@ -34,6 +34,7 @@ Meteor.methods({
     } catch (error) {
       return {
         success: false,
+        error,
       };
     }
 
@@ -57,6 +58,7 @@ Meteor.methods({
     } catch (error) {
       return {
         success: false,
+        error,
       };
     }
   },
