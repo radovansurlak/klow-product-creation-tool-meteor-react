@@ -25,6 +25,8 @@ const shopifyCSVHeaders = [
   'Variant Fulfillment Service',
   'Variant Price',
   'Variant Inventory Qty',
+  'SEO Title',
+  'SEO Description',
 ];
 
 export default shopifyCSVHeaders;
