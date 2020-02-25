@@ -25,36 +25,51 @@ const defaults = {
 };
 
 function createCertificationsLine(product) {
-  const certificationKeys = ['productionCertifications', 'materialCertifications', 'brandCertifications', 'productCertifications'];
+  const certificationKeys = [
+    'productionCertifications',
+    'materialCertifications',
+    'brandCertifications',
+    'productCertifications',
+  ];
   const certificationStrings = [];
-  certificationKeys.forEach(key => product[key] && certificationStrings.push(product[key]));
+  certificationKeys.forEach(
+    key => product[key] && certificationStrings.push(product[key]),
+  );
   return `<li>Certifications: ${certificationStrings.join(', ')}</li>`;
 }
 
-function populateHTMLTemplate(product = defaults.product, brand = defaults.brand, dropshippedProduct = true) {
+function populateHTMLTemplate(
+  product = defaults.product,
+  brand = defaults.brand,
+  dropshippedProduct = true,
+) {
   const lines = ['<ul>'];
 
   if (product.modelName && product.modelSizeWorn) {
-    lines.push(`<li>The model ${product.modelName} is wearing a size ${product.modelSizeWorn}.</li>`);
+    lines.push(
+      `<li>Le modèle ${product.modelName} porte une taille ${product.modelSizeWorn}.</li>`,
+    );
   } else if (product.modelSizeWorn) {
-    lines.push(`<li>The model is wearing a size ${product.modelSizeWorn}.</li>`);
+    lines.push(
+      `<li>Le modèle porte une taille ${product.modelSizeWorn}.</li>`,
+    );
   }
   if (product.cut) {
-    lines.push(`<li>Cut: ${product.cut}</li>`);
+    lines.push(`<li>Coupe: ${product.cut}</li>`);
   }
   if (product.fit) {
     lines.push(`<li>Fit: ${product.fit}</li>`);
   }
   if (product.color) {
-    lines.push(`<li>Color: ${product.color}</li>`);
+    lines.push(`<li>Couleur: ${product.color}</li>`);
   }
   if (product.material) {
-    lines.push(`<li>Material(s): ${product.material}</li>`);
+    lines.push(`<li>Matières: ${product.material}</li>`);
   }
   if (product.madeIn) {
     lines.push(`<li>Made in: ${product.madeIn}</li>`);
   }
-  lines.push('<li>Care: 30° mild fine wash, do not bleach</li>');
+  lines.push("<li>Entretien: Éviter de laver trop souvent, préférer l'aération et le pressing. Sinon lavage à froid, 20° ou 30° pour économiser un maximum l'énergie. </li>");
   lines.push(createCertificationsLine(product));
 
   lines.push('</ul>');
