@@ -137,30 +137,11 @@ class CSVProcessor extends Component {
   };
 
   createShopifyMetafield = async productData => new Promise((resolve, reject) => {
-    const { processCertificationArray } = this;
-
-    const certificationKeys = [
-      'Production Certifications',
-      'Material Certifications',
-      'Brand Certifications',
-      'Product Certifications',
-    ];
-    const certificationStrings = [];
-
-    certificationKeys.forEach(
-      key => productData[key] && certificationStrings.push(productData[key]),
-    );
-
-    const processedCertificationStrings = processCertificationArray(
-      certificationStrings,
-    );
-
-    const metafieldValueString = processedCertificationStrings.join(', ');
     const productHandle = productData.Handle || generateSlug(productData.Title);
 
     Meteor.call(
       'createMetafieldData',
-      { productHandle, metafieldValueString },
+      { productHandle, metafieldValueString: productData.certifications },
       (error, result) => {
         if (error) reject(error);
         resolve(result);
@@ -176,8 +157,6 @@ class CSVProcessor extends Component {
       injectHTMLTemplate,
       cleanUpCSVData,
     } = this;
-
-    console.log(csvData);
 
     csvData.data.forEach(injectDefaultValues);
     injectDefaultHeaders(csvData);
