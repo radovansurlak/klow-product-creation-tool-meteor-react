@@ -1,3 +1,7 @@
+/* eslint-disable jsx-a11y/label-has-associated-control */
+/* eslint-disable jsx-a11y/label-has-for */
+/* eslint-disable no-param-reassign */
+/* eslint-disable import/no-unresolved */
 /* eslint-disable no-restricted-syntax */
 /* eslint-disable no-await-in-loop */
 import React, { Component } from 'react';
@@ -7,9 +11,7 @@ import Papa from 'papaparse';
 import uuid from 'uuid/v1';
 import generateSlug from '../helpers/generateSlug';
 
-import {
-  headerMap, valueMap, productMap,
-} from '../data/dataMaps';
+import { headerMap, valueMap, productMap } from '../data/dataMaps';
 
 import shopifyCSVHeaders from '../data/shopifyCSVHeaders';
 import populateHTMLTemplate from '../data/populateHTMLTemplate';
@@ -25,59 +27,52 @@ class CSVProcessor extends Component {
       archivedCSVData: undefined,
       displayMetafieldButton: false,
       csvfile: undefined,
-      productTypes: [{ label: 'Marketplace', value: 'marketplace' }, { label: 'Retail', value: 'retail' }],
+      productTypes: [
+        { label: 'Marketplace', value: 'marketplace' },
+        { label: 'Retail', value: 'retail' },
+      ],
       selectedProductType: undefined,
       importChecked: false,
       creatingMetafields: false,
     };
   }
 
-  async componentDidMount() {
-    const response = await fetch(Meteor.settings.public.BRAND_TEMPLATES_SHEET_URLS);
-    const textResponse = await response.text();
-    Papa.parse(textResponse, {
-      header: true,
-      transformHeader: (header) => {
-        const mappedHeader = headerMap.get(header);
-        if (mappedHeader !== undefined) {
-          return mappedHeader;
-        }
-        return header;
-      },
-      complete: ({ data }) => {
-        brandTemplates = data.reduce((result, item) => {
-          result[item.name] = item;
-          return result;
-        }, {});
-      },
+  componentDidMount() {
+    Meteor.call('fetchBrandTemplates', (err, result) => {
+      brandTemplates = result;
     });
   }
 
   handleUpload = (event) => {
     const { importCSV } = this;
-    this.setState({
-      csvfile: event.target.files[0],
-    }, importCSV);
-  }
+    this.setState(
+      {
+        csvfile: event.target.files[0],
+      },
+      importCSV,
+    );
+  };
 
   injectDefaultValues = (item) => {
     valueMap.forEach(([column, value]) => {
       item[column] = value;
     });
-  }
+  };
 
   injectDefaultHeaders = (data) => {
     valueMap.forEach(([column]) => {
       data.meta.fields.push(column);
     });
-  }
+  };
 
   getProductValues = (dataRow) => {
     const valueTagData = Object.entries(dataRow).filter(([tag]) => tag.includes('Tag Value'));
-    const valuesOnlyData = valueTagData.map(([, value]) => value).filter(tag => tag.length !== 0);
+    const valuesOnlyData = valueTagData
+      .map(([, value]) => value)
+      .filter(tag => tag.length !== 0);
     const valuesString = valuesOnlyData.join(', ');
     return valuesString;
-  }
+  };
 
   injectHTMLTemplate = (dataRow) => {
     const { getProductValues } = this;
@@ -89,20 +84,23 @@ class CSVProcessor extends Component {
 
     productData.values = getProductValues(dataRow);
 
-    Object.entries(dataRow)
-      .forEach(([property, value]) => {
-        const mappedProperty = productMap.get(property);
-        if (mappedProperty) {
-          productData[mappedProperty] = value;
-        }
-      });
+    Object.entries(dataRow).forEach(([property, value]) => {
+      const mappedProperty = productMap.get(property);
+      if (mappedProperty) {
+        productData[mappedProperty] = value;
+      }
+    });
 
     const brandData = brandTemplates[productData.brand];
 
-    const populatedHTML = populateHTMLTemplate(productData, brandData, isMarketplaceProduct);
+    const populatedHTML = populateHTMLTemplate(
+      productData,
+      brandData,
+      isMarketplaceProduct,
+    );
 
     dataRow['Body (HTML)'] = populatedHTML;
-  }
+  };
 
   deleteRedundantProductData = (product) => {
     Object.keys(product).forEach((property) => {
@@ -110,20 +108,23 @@ class CSVProcessor extends Component {
         delete product[property];
       }
     });
-  }
+  };
 
   deleteRedundantHeaders = (data) => {
     data.meta.fields = data.meta.fields.filter(header => shopifyCSVHeaders.includes(header));
-  }
+  };
 
   cleanUpCSVData = (data) => {
     const { deleteRedundantProductData, deleteRedundantHeaders } = this;
     data.data.forEach(deleteRedundantProductData);
     deleteRedundantHeaders(data);
-  }
+  };
 
   processCertificationArray = (certificationArray) => {
-    const flatCertificationArray = certificationArray.map(x => x.split(',')).flatten().map(x => x.trim());
+    const flatCertificationArray = certificationArray
+      .map(x => x.split(','))
+      .flatten()
+      .map(x => x.trim());
     const filteredArray = [];
     const certificationHash = {};
     flatCertificationArray.forEach((certification) => {
@@ -138,23 +139,34 @@ class CSVProcessor extends Component {
   createShopifyMetafield = async productData => new Promise((resolve, reject) => {
     const { processCertificationArray } = this;
 
-    const certificationKeys = ['Production Certifications', 'Material Certifications', 'Brand Certifications', 'Product Certifications'];
+    const certificationKeys = [
+      'Production Certifications',
+      'Material Certifications',
+      'Brand Certifications',
+      'Product Certifications',
+    ];
     const certificationStrings = [];
 
-    certificationKeys.forEach(key => productData[key]
-      && certificationStrings.push(productData[key]));
+    certificationKeys.forEach(
+      key => productData[key] && certificationStrings.push(productData[key]),
+    );
 
-    const processedCertificationStrings = processCertificationArray(certificationStrings);
+    const processedCertificationStrings = processCertificationArray(
+      certificationStrings,
+    );
 
     const metafieldValueString = processedCertificationStrings.join(', ');
     const productHandle = productData.Handle || generateSlug(productData.Title);
 
-    Meteor.call('createMetafieldData', { productHandle, metafieldValueString }, (error, result) => {
-      if (error) reject(error);
-      resolve(result);
-    });
-  })
-
+    Meteor.call(
+      'createMetafieldData',
+      { productHandle, metafieldValueString },
+      (error, result) => {
+        if (error) reject(error);
+        resolve(result);
+      },
+    );
+  });
 
   processCSVData = async (csvData) => {
     const {
@@ -164,6 +176,8 @@ class CSVProcessor extends Component {
       injectHTMLTemplate,
       cleanUpCSVData,
     } = this;
+
+    console.log(csvData);
 
     csvData.data.forEach(injectDefaultValues);
     injectDefaultHeaders(csvData);
@@ -175,11 +189,14 @@ class CSVProcessor extends Component {
 
     cleanUpCSVData(csvData);
 
-    this.setState({
-      csvfile: Papa.unparse(csvData),
-      displayMetafieldButton: true,
-    }, downloadCSV);
-  }
+    this.setState(
+      {
+        csvfile: Papa.unparse(csvData),
+        displayMetafieldButton: true,
+      },
+      downloadCSV,
+    );
+  };
 
   importCSV = () => {
     const { processCSVData } = this;
@@ -187,22 +204,20 @@ class CSVProcessor extends Component {
     Papa.parse(csvfile, {
       header: true,
       transformHeader: (header) => {
+        header = header.trim();
         const mappedHeader = headerMap.get(header);
-        if (mappedHeader !== undefined) {
-          return mappedHeader;
-        }
-        return header;
+        return mappedHeader || header;
       },
       complete: processCSVData,
     });
-  }
+  };
 
   handleOptionChange = (event) => {
     const { value: selectedValue } = event.target;
     this.setState(() => ({
       selectedProductType: selectedValue,
     }));
-  }
+  };
 
   filterProductArray = (productArray) => {
     const filteredArray = [];
@@ -214,13 +229,13 @@ class CSVProcessor extends Component {
       }
     });
     return filteredArray;
-  }
+  };
 
   handleCheckboxChange = () => {
     this.setState(oldState => ({
       importChecked: !oldState.importChecked,
     }));
-  }
+  };
 
   handleMetafieldButtonClick = async () => {
     const { archivedCSVData } = this.state;
@@ -246,19 +261,24 @@ class CSVProcessor extends Component {
     });
 
     alert('Finished creating Shopify metafields');
-  }
+  };
 
   downloadCSV() {
     const { csvfile } = this.state;
     const csv = csvfile;
 
     const timestamp = new Date();
-    const formattedDate = `${timestamp.getFullYear()}-${timestamp.getMonth() + 1}-${timestamp.getDate()}_${timestamp.getHours()}-${timestamp.getMinutes()}`;
+    const formattedDate = `${timestamp.getFullYear()}-${
+      timestamp.getMonth() + 1
+    }-${timestamp.getDate()}_${timestamp.getHours()}-${timestamp.getMinutes()}`;
 
     const csvData = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     let csvURL = null;
     if (navigator.msSaveBlob) {
-      csvURL = navigator.msSaveBlob(csvData, `klow-creator-${formattedDate}.csv`);
+      csvURL = navigator.msSaveBlob(
+        csvData,
+        `klow-creator-${formattedDate}.csv`,
+      );
     } else {
       csvURL = window.URL.createObjectURL(csvData);
     }
@@ -269,22 +289,31 @@ class CSVProcessor extends Component {
     tempLink.click();
   }
 
-
   renderRadios = () => {
     const { productTypes, selectedProductType } = this.state;
     const { handleOptionChange } = this;
     return productTypes.map(({ label, value }) => (
       <span key={uuid()} className="product-type-selector">
-        <input type="radio" name="productType" id={`select-${value}`} checked={selectedProductType === value} onChange={handleOptionChange} value={value} />
+        <input
+          type="radio"
+          name="productType"
+          id={`select-${value}`}
+          checked={selectedProductType === value}
+          onChange={handleOptionChange}
+          value={value}
+        />
         <label htmlFor={`select-${value}`}>{label}</label>
       </span>
     ));
-  }
+  };
 
   render() {
     const { renderRadios } = this;
     const {
-      selectedProductType, displayMetafieldButton, importChecked, creatingMetafields,
+      selectedProductType,
+      displayMetafieldButton,
+      importChecked,
+      creatingMetafields,
     } = this.state;
 
     const showMetafieldButton = displayMetafieldButton && importChecked && !creatingMetafields;
@@ -307,16 +336,35 @@ class CSVProcessor extends Component {
           onChange={this.handleUpload}
         />
 
-        {!displayMetafieldButton && <label htmlFor="file-upload" className="custom-file-upload">Upload CSV</label>}
-        {displayMetafieldButton && !creatingMetafields && (
-        <label className="import-label">
-          <input type="checkbox" className="import-checkbox" checked={importChecked} onChange={() => this.handleCheckboxChange()} />
-          All products finished importing in Shopify
-        </label>
+        {!displayMetafieldButton && (
+          <label htmlFor="file-upload" className="custom-file-upload">
+            Upload CSV
+          </label>
         )}
-        {showMetafieldButton && <button className="metafield-button" type="button" onClick={() => this.handleMetafieldButtonClick()}>Create metafields</button>}
-        {creatingMetafields && <h3 className="metafields-info-header">Creating metafields...</h3> }
-        {creatingMetafields && <Loader /> }
+        {displayMetafieldButton && !creatingMetafields && (
+          <label className="import-label">
+            <input
+              type="checkbox"
+              className="import-checkbox"
+              checked={importChecked}
+              onChange={() => this.handleCheckboxChange()}
+            />
+            All products finished importing in Shopify
+          </label>
+        )}
+        {showMetafieldButton && (
+          <button
+            className="metafield-button"
+            type="button"
+            onClick={() => this.handleMetafieldButtonClick()}
+          >
+            Create metafields
+          </button>
+        )}
+        {creatingMetafields && (
+          <h3 className="metafields-info-header">Creating metafields...</h3>
+        )}
+        {creatingMetafields && <Loader />}
       </main>
     );
   }

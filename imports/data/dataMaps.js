@@ -3,7 +3,7 @@
 
 const headerMappings = [
   ['Brand', 'Vendor'],
-  ['Title Name', 'Title'],
+  ['Product Name', 'Title'],
   ['Images', 'Image Src'],
   ['Product Type', 'Type'],
   ['SKU', 'Variant SKU'],
@@ -12,7 +12,6 @@ const headerMappings = [
   ['Inventory Quantity', 'Variant Inventory Qty'],
 ];
 
-// TODO: These mappings could really use to be redesigned
 const productMappings = [
   ['Cut', 'cut'],
   ['Fit', 'fit'],

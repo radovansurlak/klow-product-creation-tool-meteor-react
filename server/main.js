@@ -1,6 +1,3 @@
-import { Meteor } from 'meteor/meteor';
-import '../imports/api/UpdateMetafields';
-
-Meteor.startup(() => {
-
-});
+/* eslint-disable import/no-absolute-path */
+import '/imports/api/updateMetafields';
+import '/imports/api/brandTemplates';
