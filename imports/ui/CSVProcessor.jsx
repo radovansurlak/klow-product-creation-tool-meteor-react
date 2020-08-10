@@ -1,31 +1,33 @@
-import React, { Component } from 'react';
-import { Meteor } from 'meteor/meteor';
-import Papa from 'papaparse';
+import React, { Component } from "react";
+import { Meteor } from "meteor/meteor";
+import Papa from "papaparse";
 
-import uuid from 'uuid/v1';
+import uuid from "uuid/v1";
 
+import { headerMap, valueMap, productMap } from "../data/dataMaps";
 
-import {
-  headerMap, valueMap, productMap,
-} from '../data/dataMaps';
+import shopifyCSVHeaders from "../data/shopifyCSVHeaders";
+import populateHTMLTemplate from "../data/populateHTMLTemplate";
 
-import shopifyCSVHeaders from '../data/shopifyCSVHeaders';
-import populateHTMLTemplate from '../data/populateHTMLTemplate';
-
-let brandTemplates;
+let brandTemplates = {};
 
 class CSVProcessor extends Component {
   constructor() {
     super();
     this.state = {
       csvfile: undefined,
-      productTypes: [{ label: 'Marketplace', value: 'marketplace' }, { label: 'Retail', value: 'retail' }],
+      productTypes: [
+        { label: "Marketplace", value: "marketplace" },
+        { label: "Retail", value: "retail" },
+      ],
       selectedProductType: undefined,
     };
   }
 
   async componentDidMount() {
-    const response = await fetch(Meteor.settings.public.BRAND_TEMPLATES_SHEET_URLS);
+    const response = await fetch(
+      Meteor.settings.public.BRAND_TEMPLATES_SHEET_URLS
+    );
     const textResponse = await response.text();
     Papa.parse(textResponse, {
       header: true,
@@ -47,29 +49,36 @@ class CSVProcessor extends Component {
 
   handleUpload = (event) => {
     const { importCSV } = this;
-    this.setState({
-      csvfile: event.target.files[0],
-    }, importCSV);
-  }
+    this.setState(
+      {
+        csvfile: event.target.files[0],
+      },
+      importCSV
+    );
+  };
 
   injectDefaultValues = (item) => {
     valueMap.forEach(([column, value]) => {
       item[column] = value;
     });
-  }
+  };
 
   injectDefaultHeaders = (data) => {
     valueMap.forEach(([column]) => {
       data.meta.fields.push(column);
     });
-  }
+  };
 
   getProductValues = (dataRow) => {
-    const valueTagData = Object.entries(dataRow).filter(([tag]) => tag.includes('Tag Value'));
-    const valuesOnlyData = valueTagData.map(([, value]) => value).filter(tag => tag.length !== 0);
-    const valuesString = valuesOnlyData.join(', ');
+    const valueTagData = Object.entries(dataRow).filter(([tag]) =>
+      tag.includes("Tag Value")
+    );
+    const valuesOnlyData = valueTagData
+      .map(([, value]) => value)
+      .filter((tag) => tag.length !== 0);
+    const valuesString = valuesOnlyData.join(", ");
     return valuesString;
-  }
+  };
 
   injectHTMLTemplate = (dataRow) => {
     const { getProductValues } = this;
@@ -77,24 +86,27 @@ class CSVProcessor extends Component {
 
     const productData = {};
 
-    const isMarketplaceProduct = selectedProductType === 'marketplace';
+    const isMarketplaceProduct = selectedProductType === "marketplace";
 
     productData.values = getProductValues(dataRow);
 
-    Object.entries(dataRow)
-      .forEach(([property, value]) => {
-        const mappedProperty = productMap.get(property);
-        if (mappedProperty) {
-          productData[mappedProperty] = value;
-        }
-      });
+    Object.entries(dataRow).forEach(([property, value]) => {
+      const mappedProperty = productMap.get(property);
+      if (mappedProperty) {
+        productData[mappedProperty] = value;
+      }
+    });
 
-    const brandData = brandTemplates[productData.brand];
+    const brandData = brandTemplates[productData.brand] || null;
 
-    const populatedHTML = populateHTMLTemplate(productData, brandData, isMarketplaceProduct);
+    const populatedHTML = populateHTMLTemplate(
+      productData,
+      brandData,
+      isMarketplaceProduct
+    );
 
-    dataRow['Body (HTML)'] = populatedHTML;
-  }
+    dataRow["Body (HTML)"] = populatedHTML;
+  };
 
   deleteRedundantProductData = (product) => {
     Object.keys(product).forEach((property) => {
@@ -102,31 +114,40 @@ class CSVProcessor extends Component {
         delete product[property];
       }
     });
-  }
+  };
 
   deleteRedundantHeaders = (data) => {
-    data.meta.fields = data.meta.fields.filter(header => shopifyCSVHeaders.includes(header));
-  }
+    data.meta.fields = data.meta.fields.filter((header) =>
+      shopifyCSVHeaders.includes(header)
+    );
+  };
 
   cleanUpCSVData = (data) => {
     const { deleteRedundantProductData, deleteRedundantHeaders } = this;
     data.data.forEach(deleteRedundantProductData);
     deleteRedundantHeaders(data);
-  }
+  };
 
   processCSVData = (csvData) => {
     const {
-      downloadCSV, injectDefaultValues, injectDefaultHeaders, injectHTMLTemplate, cleanUpCSVData,
+      downloadCSV,
+      injectDefaultValues,
+      injectDefaultHeaders,
+      injectHTMLTemplate,
+      cleanUpCSVData,
     } = this;
     csvData.data.forEach(injectDefaultValues);
     injectDefaultHeaders(csvData);
     csvData.data.forEach(injectHTMLTemplate);
     cleanUpCSVData(csvData);
 
-    this.setState({
-      csvfile: Papa.unparse(csvData),
-    }, downloadCSV);
-  }
+    this.setState(
+      {
+        csvfile: Papa.unparse(csvData),
+      },
+      downloadCSV
+    );
+  };
 
   importCSV = () => {
     const { processCSVData } = this;
@@ -142,47 +163,58 @@ class CSVProcessor extends Component {
       },
       complete: processCSVData,
     });
-  }
+  };
 
   handleOptionChange = (event) => {
     const { value: selectedValue } = event.target;
     this.setState(() => ({
       selectedProductType: selectedValue,
     }));
-  }
+  };
 
   downloadCSV() {
     const { csvfile } = this.state;
     const csv = csvfile;
 
     const timestamp = new Date();
-    const formattedDate = `${timestamp.getFullYear()}-${timestamp.getMonth() + 1}-${timestamp.getDate()}_${timestamp.getHours()}-${timestamp.getMinutes()}`;
+    const formattedDate = `${timestamp.getFullYear()}-${
+      timestamp.getMonth() + 1
+    }-${timestamp.getDate()}_${timestamp.getHours()}-${timestamp.getMinutes()}`;
 
-    const csvData = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const csvData = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     let csvURL = null;
     if (navigator.msSaveBlob) {
-      csvURL = navigator.msSaveBlob(csvData, `klow-creator-${formattedDate}.csv`);
+      csvURL = navigator.msSaveBlob(
+        csvData,
+        `klow-creator-${formattedDate}.csv`
+      );
     } else {
       csvURL = window.URL.createObjectURL(csvData);
     }
 
-    const tempLink = document.createElement('a');
+    const tempLink = document.createElement("a");
     tempLink.href = csvURL;
-    tempLink.setAttribute('download', `klow-creator-${formattedDate}.csv`);
+    tempLink.setAttribute("download", `klow-creator-${formattedDate}.csv`);
     tempLink.click();
   }
-
 
   renderRadios = () => {
     const { productTypes, selectedProductType } = this.state;
     const { handleOptionChange } = this;
     return productTypes.map(({ label, value }) => (
       <span key={uuid()} className="product-type-selector">
-        <input type="radio" name="productType" id={`select-${value}`} checked={selectedProductType === value} onChange={handleOptionChange} value={value} />
+        <input
+          type="radio"
+          name="productType"
+          id={`select-${value}`}
+          checked={selectedProductType === value}
+          onChange={handleOptionChange}
+          value={value}
+        />
         <label htmlFor={`select-${value}`}>{label}</label>
       </span>
     ));
-  }
+  };
 
   render() {
     const { renderRadios } = this;
@@ -204,7 +236,9 @@ class CSVProcessor extends Component {
           placeholder={null}
           onChange={this.handleUpload}
         />
-        <label htmlFor="file-upload" className="custom-file-upload">Upload CSV</label>
+        <label htmlFor="file-upload" className="custom-file-upload">
+          Upload CSV
+        </label>
       </main>
     );
   }
