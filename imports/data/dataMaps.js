@@ -3,7 +3,7 @@
 
 const headerMappings = [
   ['Brand', 'Vendor'],
-  ['Product Name', 'Title'],
+  ['Title Name', 'Title'],
   ['Images', 'Image Src'],
   ['Product Type', 'Type'],
   ['SKU', 'Variant SKU'],
