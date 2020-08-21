@@ -121,15 +121,29 @@ class CSVProcessor extends Component {
   deleteRedundantProductData = (product) => {
     Object.keys(product).forEach((property) => {
       if (!shopifyCSVHeaders.includes(property)) {
-        delete product[property];
+        const header = shopifyCSVHeaders.find(
+          (header) => header.toLowerCase() === property.toLowerCase(),
+        );
+        if (header) {
+          product[header] = product[property];
+          delete product[property];
+        } else {
+          delete product[property];
+        }
       }
     });
   };
 
   deleteRedundantHeaders = (data) => {
-    data.meta.fields = data.meta.fields.filter((header) =>
-      shopifyCSVHeaders.includes(header),
-    );
+    data.meta.fields = data.meta.fields
+      .map((header) => {
+        const pairedHeader = shopifyCSVHeaders.find(
+          (shopifyHeader) =>
+            shopifyHeader.toLowerCase() === header.toLowerCase(),
+        );
+        return pairedHeader || false;
+      })
+      .filter(Boolean);
   };
 
   cleanUpCSVData = (data) => {
