@@ -95,9 +95,15 @@ class CSVProcessor extends Component {
     productData.values = getProductValues(dataRow);
 
     Object.entries(dataRow).forEach(([property, value]) => {
-      const mappedProperty = productMap.get(property);
+      // const mappedProperty = productMap.get(property);
+      const productArray = Array.from(productMap);
+
+      const mappedProperty = productArray.find(
+        ([name]) => name.toLowerCase() === property.toLowerCase(),
+      );
+
       if (mappedProperty) {
-        productData[mappedProperty] = value;
+        productData[mappedProperty[1]] = value;
       }
     });
 
@@ -165,13 +171,11 @@ class CSVProcessor extends Component {
     Papa.parse(csvfile, {
       header: true,
       transformHeader: (header) => {
-        debugger;
         header = header.trim();
         const headerArray = Array.from(headerMap);
         const mappedHeader = headerArray.find(
           ([name]) => name.toLowerCase() === header.toLowerCase(),
         );
-        // const mappedHeader = headerMap.get(header);
         return (mappedHeader && mappedHeader[1]) || header;
       },
       complete: processCSVData,

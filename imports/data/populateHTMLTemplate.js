@@ -45,7 +45,7 @@ function populateHTMLTemplate(
 ) {
   const lines = ['<ul>'];
 
-  if (product.modelSizeWorn) lines.push(`<li>Le modèle ${product.modelName} porte une taille ${product.modelSizeWorn}.</li>`);
+  if (product.modelSizeWorn) lines.push(`<li>Le modèle porte une taille ${product.modelSizeWorn}.</li>`);
   if (product.modelHeight) lines.push(`<li>Le modèle mesure ${product.modelHeight}.</li>`);
   if (product.details) lines.push(`<li>Détails: ${product.details}</li>`);
   if (product.fitAndCut) lines.push(`<li>Fit et coupe: ${product.fitAndCut}</li>`);
