@@ -1,13 +1,13 @@
-import React, { Component } from "react";
-import { Meteor } from "meteor/meteor";
-import Papa from "papaparse";
+import React, { Component } from 'react';
+import { Meteor } from 'meteor/meteor';
+import Papa from 'papaparse';
 
-import uuid from "uuid/v1";
+import uuid from 'uuid/v1';
 
-import { headerMap, valueMap, productMap } from "../data/dataMaps";
+import { headerMap, valueMap, productMap } from '../data/dataMaps';
 
-import shopifyCSVHeaders from "../data/shopifyCSVHeaders";
-import populateHTMLTemplate from "../data/populateHTMLTemplate";
+import shopifyCSVHeaders from '../data/shopifyCSVHeaders';
+import populateHTMLTemplate from '../data/populateHTMLTemplate';
 
 let brandTemplates = {};
 
@@ -19,8 +19,8 @@ class CSVProcessor extends Component {
       displayMetafieldButton: false,
       csvfile: undefined,
       productTypes: [
-        { label: "Marketplace", value: "marketplace" },
-        { label: "Retail", value: "retail" },
+        { label: 'Marketplace', value: 'marketplace' },
+        { label: 'Retail', value: 'retail' },
       ],
       selectedProductType: undefined,
       importChecked: false,
@@ -30,7 +30,7 @@ class CSVProcessor extends Component {
 
   async componentDidMount() {
     const response = await fetch(
-      Meteor.settings.public.BRAND_TEMPLATES_SHEET_URLS
+      Meteor.settings.public.BRAND_TEMPLATES_SHEET_URLS,
     );
     const textResponse = await response.text();
     Papa.parse(textResponse, {
@@ -57,7 +57,7 @@ class CSVProcessor extends Component {
       {
         csvfile: event.target.files[0],
       },
-      importCSV
+      importCSV,
     );
   };
 
@@ -75,12 +75,12 @@ class CSVProcessor extends Component {
 
   getProductValues = (dataRow) => {
     const valueTagData = Object.entries(dataRow).filter(([tag]) =>
-      tag.includes("Tag Value")
+      tag.includes('Tag Value'),
     );
     const valuesOnlyData = valueTagData
       .map(([, value]) => value)
       .filter((tag) => tag.length !== 0);
-    const valuesString = valuesOnlyData.join(", ");
+    const valuesString = valuesOnlyData.join(', ');
     return valuesString;
   };
 
@@ -90,7 +90,7 @@ class CSVProcessor extends Component {
 
     const productData = {};
 
-    const isMarketplaceProduct = selectedProductType === "marketplace";
+    const isMarketplaceProduct = selectedProductType === 'marketplace';
 
     productData.values = getProductValues(dataRow);
 
@@ -106,10 +106,10 @@ class CSVProcessor extends Component {
     const populatedHTML = populateHTMLTemplate(
       productData,
       brandData,
-      isMarketplaceProduct
+      isMarketplaceProduct,
     );
 
-    dataRow["Body (HTML)"] = populatedHTML;
+    dataRow['Body (HTML)'] = populatedHTML;
   };
 
   deleteRedundantProductData = (product) => {
@@ -122,7 +122,7 @@ class CSVProcessor extends Component {
 
   deleteRedundantHeaders = (data) => {
     data.meta.fields = data.meta.fields.filter((header) =>
-      shopifyCSVHeaders.includes(header)
+      shopifyCSVHeaders.includes(header),
     );
   };
 
@@ -155,7 +155,7 @@ class CSVProcessor extends Component {
       {
         csvfile: Papa.unparse(csvData),
       },
-      downloadCSV
+      downloadCSV,
     );
   };
 
@@ -165,9 +165,14 @@ class CSVProcessor extends Component {
     Papa.parse(csvfile, {
       header: true,
       transformHeader: (header) => {
+        debugger;
         header = header.trim();
-        const mappedHeader = headerMap.get(header);
-        return mappedHeader || header;
+        const headerArray = Array.from(headerMap);
+        const mappedHeader = headerArray.find(
+          ([name]) => name.toLowerCase() === header.toLowerCase(),
+        );
+        // const mappedHeader = headerMap.get(header);
+        return (mappedHeader && mappedHeader[1]) || header;
       },
       complete: processCSVData,
     });
@@ -189,20 +194,20 @@ class CSVProcessor extends Component {
       timestamp.getMonth() + 1
     }-${timestamp.getDate()}_${timestamp.getHours()}-${timestamp.getMinutes()}`;
 
-    const csvData = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const csvData = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     let csvURL = null;
     if (navigator.msSaveBlob) {
       csvURL = navigator.msSaveBlob(
         csvData,
-        `klow-creator-${formattedDate}.csv`
+        `klow-creator-${formattedDate}.csv`,
       );
     } else {
       csvURL = window.URL.createObjectURL(csvData);
     }
 
-    const tempLink = document.createElement("a");
+    const tempLink = document.createElement('a');
     tempLink.href = csvURL;
-    tempLink.setAttribute("download", `klow-creator-${formattedDate}.csv`);
+    tempLink.setAttribute('download', `klow-creator-${formattedDate}.csv`);
     tempLink.click();
   }
 
@@ -233,7 +238,8 @@ class CSVProcessor extends Component {
       creatingMetafields,
     } = this.state;
 
-    const showMetafieldButton = displayMetafieldButton && importChecked && !creatingMetafields;
+    const showMetafieldButton =
+      displayMetafieldButton && importChecked && !creatingMetafields;
 
     return (
       <main className="main-container">
